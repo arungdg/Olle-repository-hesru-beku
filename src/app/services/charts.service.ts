@@ -6,12 +6,9 @@ import { Observable } from 'rxjs';
 @Injectable()
 export class ChartsService {
 
-  constructor(
-    private http: HttpClient) {
-  }
+  constructor(private http: HttpClient) { }
 
-  getJSON(date, slot): Observable<any> {
-
+  getJSON(date:any, slot:any): Observable<any> {
     return this.http.get('http://localhost:8010/api/v1/route' + "?" + "date=" + date + "&" + "slotType=" + slot);
   }
 }
