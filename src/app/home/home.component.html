@@ -19,10 +19,13 @@
     </td>
      
     <td>
-      <button (click)="showGraph()" type="submit">Submit</button>
+      <button (click)="showGraph()" type="submit" #submitButton>Submit</button>
     </td>
     </tr>
     </table>
+    <div *ngIf="errorMessage">
+      {{errorMessage}}
+    </div>
     <app-chart></app-chart>
     <!-- <div class="container" style="margin-top:20%;">
         <div *ngIf="chart">

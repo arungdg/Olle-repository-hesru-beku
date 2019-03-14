@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { importType } from '@angular/compiler/src/output/output_ast';
 import { HomeService } from '../services/Home.service';
 import { ChartComponent } from '../chart/app.chart';
@@ -19,36 +19,62 @@ export class HomeComponent implements OnInit {
 
   chart = [];
   slots: Food[] = [
-    {value: 'A', viewValue: '9:00-12:00'},
-    {value: 'B', viewValue: '12:00-3:00'},
-    {value: 'C', viewValue: '3:00-8:00'}
+    { value: 'A', viewValue: '9:00-12:00' },
+    { value: 'B', viewValue: '12:00-3:00' },
+    { value: 'C', viewValue: '3:00-8:00' }
   ];
 
   @ViewChild(ChartComponent) chartComponent: ChartComponent;
- slotsAvailable: any = [];
- url: any;
- dateValue: Date;
- selectedSlot: String;
+  @ViewChild('submitButton') submitButton: ElementRef;
+  slotsAvailable: any = [];
+  url: any;
+  dateValue: Date = null;
+  selectedSlot: String = null;
+  errorMessage = "";
 
-totalPrice() {
- console.log('this is child');
-}
- constructor() {  }
+  constructor(private ref: ChangeDetectorRef){}
+
   ngOnInit() {
+    this.submitButton.nativeElement.disabled = true;
   }
 
-addEvent(event: MatDatepickerInputEvent<Date>) {
-  console.log(event.value);
-  this.dateValue = event.value;
-  console.log('date value in home is', this.dateValue);
-}
-
-onClick(value: any) {
-  console.log('selected value', value);
-  this.selectedSlot = value;
-}
-
-showGraph() {
-  this.chartComponent.getChartInfo(this.dateValue, this.selectedSlot);
-}
+  totalPrice() {
+    console.log('this is child');
   }
+
+  addEvent(event: MatDatepickerInputEvent<Date>) {
+    if (event.value === null) {
+      this.submitButton.nativeElement.disabled = true;
+    } else {
+      this.submitButton.nativeElement.disabled = false;
+      console.log(event.value);
+      this.dateValue = event.value;
+      console.log('date value in home is', this.dateValue);
+    }
+  }
+
+  onClick(value: any) {
+    if (value === null) {
+      this.submitButton.nativeElement.disabled = true;
+    } else {
+      this.submitButton.nativeElement.disabled = false;
+      console.log('selected value', value);
+      this.selectedSlot = value;
+    }
+  }
+
+  showGraph() {
+    if (this.dateValue === null || this.selectedSlot === null || this.dateValue === undefined) {
+      this.errorMessage = "All fields are compulsory";
+    } else {
+      if(this.chartComponent.flag === false) {
+        this.errorMessage = "Please choose another value";
+        this.ref.detectChanges();
+      } else {
+        this.errorMessage = null;
+        this.chartComponent.getChartInfo(this.dateValue, this.selectedSlot);
+        this.ref.detectChanges();
+      }
+    }
+  }
+}

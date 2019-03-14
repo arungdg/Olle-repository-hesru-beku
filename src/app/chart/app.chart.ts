@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { Chart } from 'chart.js/dist/Chart.bundle.js';
 import { ChartsService } from '../services/charts.service';
 import { DatePipe } from '@angular/common';
@@ -14,8 +14,10 @@ export class ChartComponent {
   date: any;
   slot: String;
   formatDate: any;
+  errorMessage = "";
+  flag = false;
 
-  constructor(private chartsService: ChartsService, private datePipe: DatePipe) { }
+  constructor(private chartsService: ChartsService, private datePipe: DatePipe, private ref: ChangeDetectorRef) { }
   
   getChartInfo(dateValue: Date, slotType: String) {
     let lat = [];
@@ -26,24 +28,32 @@ export class ChartComponent {
     this.slot = slotType;
     this.formatDate = this.datePipe.transform(dateValue, 'yyyy-MM-dd');
     this.chartsService.getJSON(this.formatDate, this.slot).subscribe(res => {
-      res.map((data: any) => {
-        if (data['Route'].length != 0) {
-          data['Route'].map((x: any) => {
-            lat.push(x.node_X);
-            long.push(x.node_Y);
-            allNodes.push(x.nodeId);
-          });
-        }
-      });
-      for (let index = 0; index < allNodes.length; index++) {
-        fomattedData.push(
-          {
-            x:lat[index],
-            y:long[index]
+      if(res == null || res.length == 0) {
+        this.errorMessage = "Kindly select valid dates and slots";
+        this.flag = false;
+        this.ref.markForCheck();
+      } else {
+        this.flag = true;
+        res.map((data: any) => {
+          if (data['Route'].length != 0) {
+            data['Route'].map((x: any) => {
+              lat.push(x.node_X);
+              long.push(x.node_Y);
+              allNodes.push(x.nodeId);
+            });
           }
-          );
+        });
+        for (let index = 0; index < allNodes.length; index++) {
+          fomattedData.push(
+            {
+              x:lat[index],
+              y:long[index]
+            }
+            );
+        }
+        this.newChart(allNodes, fomattedData);
+        this.ref.markForCheck();
       }
-      this.newChart(allNodes, fomattedData);
     });
   }
 
